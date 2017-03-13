@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Drawing SVG Shapes with D3</title>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <svg width="250" height="50">
+        <text x="0" y="25">Easy Peasy</text>
+    </svg>
+</body>
+<script>
+    d3.select("body")
+        .append("svg").attr("width", 250).attr("height", 50)
+        .append("text").attr("x", 0).attr("y", 25).text("Easy Peasy").style("fill", "blue");
+
+</script>
+
+</html>

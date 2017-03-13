@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Drawing SVG Shapes with D3</title>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <script>
+        var height = window.innerHeight * 0.9;
+        var width = window.innerWidth * 0.9;
+        var push = window.innerWidth * 0.1 / 2;
+
+        dataset = [
+            { "month": 10, "sales": 100 },
+            { "month": 20, "sales": 130 },
+            { "month": 30, "sales": 250 },
+            { "month": 40, "sales": 300 },
+            { "month": 50, "sales": 265 },
+            { "month": 60, "sales": 225 },
+            { "month": 70, "sales": 180 },
+            { "month": 80, "sales": 120 },
+            { "month": 90, "sales": 145 },
+            { "month": 100, "sales": 130 }
+        ];
+
+        var length = dataset.length;
+        var max = d3.max(dataset, function (d) { return d.sales; });
+
+        var line = d3.svg.line()
+            .x(function (d, i) { return i * (width / dataset.length) + push; })
+            .y(function (d) { return height - ((d.sales / max) * height) })
+            //.interpolate("linear");
+            .interpolate("basis");
+
+        var svg = d3.select("body").append("svg").attr({
+            width: width,
+            height: height
+        });
+
+        var viz = svg.append("path").attr({
+            d: line(dataset),
+            stroke: "purple",
+            "stroke-width": 2,
+            fill: "none"
+        });
+
+        var labels = svg.selectAll("text")
+            .data(dataset)
+            .enter()
+            .append("text")
+            .text(function (d) { return d.sales; })
+            .attr({
+                x: function (d, i) { return i * (width / dataset.length) + push; },
+                y: function (d, i) { return height - ((d.sales / max) * height) },
+                "font-family": "sans-serif",
+                "font-size": height / 50,
+                "font-weight": function (d, i) {
+                    if (i == 0 || i == (dataset.length - 1)) {
+                        return "bold";
+                    }
+                    else {
+                        return "normal";
+                    }
+                },
+                fill: "#666666",
+                "text-anchor": "middle"
+            })
+    </script>
+</body>
+
+</html>
