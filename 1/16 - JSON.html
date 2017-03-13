@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Drawing SVG Shapes with D3</title>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <script>
+        var h = 100;
+        var w = 400;
+
+        function makeViz(ds) {
+            var line = d3.svg.line()
+                .x(function (d) {
+                    return ((d.month - 20130001) / 3.25);
+                })
+                .y(function (d) {
+                    return h - d.sales;
+                })
+                .interpolate("linear");
+
+            var svg = d3.select("body").append("svg")
+                .attr({
+                    width: w,
+                    height: h
+                });
+
+            var viz = svg.append("path")
+                .attr({
+                    d: line(ds.monthlySales),
+                    stroke: "purple",
+                    "stroke-width": 2,
+                    fill: "none"
+                });
+        }
+
+        function showHeader(ds) {
+            console.log("show header");
+            console.log(ds);
+            d3.select("body").append("h1")
+                .text(ds.category + " Sales (2013)");
+        }
+
+        function showTotals(ds) {
+
+            // create table element
+            var t = d3.select("body").append("table");
+
+            // get total
+            var salesTotal = d3.sum(ds.monthlySales, function (d) { return d.sales; });
+
+            // get average
+            var salesAvg = d3.mean(ds.monthlySales, function (d) { return d.sales; });
+
+            // metrics
+            var metrics = [
+                { name: "Sales Total", value: salesTotal },
+                { name: "Sales Avg", value: salesAvg }
+            ];
+
+            // add table rows
+            var tr = t.selectAll("tr")
+                .data(metrics)
+                .enter()
+                .append("tr")
+                .append("td")
+                .text(function (d) { return d.name + ": " + d.value.toFixed(2); });
+        }
+
+        d3.json("../Data/MonthlySalesByCategoryMultiple.json", function (error, data) {
+            if (error) {
+                console.error("error");
+                console.log(error);
+            } else {
+                console.log(data);
+            }
+
+            data.contents.forEach(function (ds) {
+                console.log(ds);
+
+                showHeader(ds);
+                makeViz(ds);
+                showTotals(ds);
+            });
+        })
+    </script>
+</body>
+
+</html>
