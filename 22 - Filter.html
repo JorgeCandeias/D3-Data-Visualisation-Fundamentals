@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Drawing SVG Shapes with D3</title>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <div>
+        Show Labels
+        <select id="label-option">
+            <option value="all">All</option>
+            <option value="minmax" selected="selected">Min/Max</option>
+            <option value="none">None</option>
+        </select>
+    </div>
+    <script>
+        var height = window.innerHeight * 0.9;
+        var width = window.innerWidth * 0.9;
+        var border = {
+            h: window.innerWidth * 0.1,
+            v: window.innerHeight * 0.1
+        }
+        var push = {
+            h: border.h / 2,
+            v: border.v / 2
+        };
+        var r = 5;
+
+        dataset = [
+            { "month": 10, "sales": 100 },
+            { "month": 20, "sales": 130 },
+            { "month": 30, "sales": 250 },
+            { "month": 40, "sales": 300 },
+            { "month": 50, "sales": 265 },
+            { "month": 60, "sales": 225 },
+            { "month": 70, "sales": 180 },
+            { "month": 80, "sales": 120 },
+            { "month": 90, "sales": 145 },
+            { "month": 100, "sales": 130 }
+        ];
+
+        var length = dataset.length;
+        var max = d3.max(dataset, function (d) { return d.sales; });
+
+        // kpi color
+        function salesKPI(d) {
+            if (d >= 250) {
+                return "red";
+            }
+            else {
+                return "blue";
+            }
+        }
+
+        // label helper
+        function showMinMax(ds, col, val, type) {
+            var max = d3.max(ds, function (d) { return d[col]; });
+            var min = d3.min(ds, function (d) { return d[col]; });
+            if (type == "minmax" && (val == max || val == min)) {
+                return val;
+            }
+            else if (type == "all") {
+                return val;
+            }
+        }
+
+        // create SVG
+        var svg = d3.select("body").append("svg").attr({
+            width: width,
+            height: height
+        });
+
+        // add dots
+        var dots = svg.selectAll("circle")
+            .data(dataset)
+            .enter()
+            .append("circle")
+            .attr({
+                cx: function (d, i) {
+                    return i * ((width - border.h) / dataset.length) + push.h;
+                },
+                cy: function (d, i) {
+                    return (height - push.v) - ((d.sales / max) * (height - border.v));
+                },
+                r: r,
+                fill: function (d) { return salesKPI(d.sales); }
+            });
+
+        // add labels
+        var labels = svg.selectAll("text")
+            .data(dataset)
+            .enter()
+            .append("text")
+            .text(function (d) {
+                return showMinMax(dataset, "sales", d.sales, "minmax");
+            })
+            .attr({
+                x: function (d, i) {
+                    return i * ((width - border.h) / dataset.length) + push.h;
+                },
+                y: function (d, i) {
+                    return (height - push.v) - ((d.sales / max) * (height - border.v)) - (r * 1.5);
+                },
+                "font-size": 20,
+                "font-family": "sans-serif",
+                fill: "#666666",
+                "text-anchor": "middle"
+            })
+
+        // add event listener
+        d3.select("#label-option").on("change", function (d) {
+            var sel = d3.select("#label-option").node().value;
+            svg.selectAll("text")
+                .data(dataset)
+                .text(function (d) {
+                    return showMinMax(dataset, "sales", d.sales, sel);
+                });
+        })
+    </script>
+</body>
+
+</html>
