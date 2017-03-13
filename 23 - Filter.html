@@ -97,7 +97,11 @@
                 var svg = d3.select("body").select("#svg-" + ds.category);
                 var xAxis = svg.selectAll("g.x-axis").call(xAxisGen);
                 var yAxis = svg.selectAll("g.y-axis").call(yAxisGen);
-                var viz = svg.selectAll(".path-" + ds.category).attr({ d: line(ds.monthlySales) });
+                var viz = svg.selectAll(".path-" + ds.category)
+                    .transition()
+                    //.duration(3000)
+                    .ease("bounce") // linear, elastic, circle
+                    .attr({ d: line(ds.monthlySales) });
             }
             else {
                 var svg = d3.select("body").append("svg")
