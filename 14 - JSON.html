@@ -63,7 +63,7 @@
                 .text(function (d) { return d.name + ": " + d.value.toFixed(2); });
         }
 
-        d3.json("../Data/MonthlySales.json", function (error, data) {
+        d3.json("Data/MonthlySales.json", function (error, data) {
             if (error) {
                 console.log(error);
             } else {

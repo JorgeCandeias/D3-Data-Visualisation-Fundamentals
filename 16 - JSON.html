@@ -69,7 +69,7 @@
                 .text(function (d) { return d.name + ": " + d.value.toFixed(2); });
         }
 
-        d3.json("../Data/MonthlySalesByCategoryMultiple.json", function (error, data) {
+        d3.json("Data/MonthlySalesByCategoryMultiple.json", function (error, data) {
             if (error) {
                 console.error("error");
                 console.log(error);
