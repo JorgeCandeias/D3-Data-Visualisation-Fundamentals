@@ -74,9 +74,13 @@
             var maxDate = getDate(d3.max(ds.monthlySales, function (d) { return d.month; }));
 
             // add tooltip
-            var tooltip = d3.select("body").append("div")
+            var tooltip = d3.select("body").selectAll("#tooltip-" + ds.category)
+                .data([0])
+                .enter()
+                .append("div")
                 .attr({
-                    class: "tooltip",
+                    id: "tooltip-" + ds.category,
+                    class: "tooltip"
                 })
                 .style("opacity", 0)
                 .text("blah");
@@ -114,83 +118,120 @@
                 })
                 .interpolate("linear"); // basis
 
-            if (update) {
-                var svg = d3.select("body").select("#svg-" + ds.category);
-                var xAxis = svg.selectAll("g.x-axis").call(xAxisGen);
-                var yAxis = svg.selectAll("g.y-axis").call(yAxisGen);
-                var viz = svg.selectAll(".path-" + ds.category)
-                    .transition()
-                    //.duration(3000)
-                    .ease("linear") // linear, elastic, circle, bounce
-                    .attr({ d: line(ds.monthlySales) });
-            }
-            else {
-                var svg = d3.select("body").append("svg")
-                    .attr({
-                        width: w,
-                        height: h,
-                        id: "svg-" + ds.category
-                    });
+            // update the svg element
+            var svg = d3.select("body").selectAll("#svg-" + ds.category)
+                .data([0])
+                .attr({
+                    class: new Date()
+                });
 
-                var xAxis = svg.append("g")
-                    .call(xAxisGen)
-                    .attr({
-                        class: "x-axis",
-                        transform: "translate(0, " + (h - padding) + ")"
-                    });
+            // or create a new one if needed
+            svg.enter()
+                .append("svg")
+                .attr({
+                    width: w,
+                    height: h,
+                    id: "svg-" + ds.category
+                });
 
-                var yAxis = svg.append("g")
-                    .call(yAxisGen)
-                    .attr({
-                        class: "y-axis",
-                        transform: "translate(" + padding + ", 0)"
-                    });
+            // draw the x axis
+            var xAxis = svg.selectAll("g.x-axis");
 
-                var viz = svg.append("path")
-                    .attr({
-                        d: line(ds.monthlySales),
-                        stroke: "purple",
-                        "stroke-width": 2,
-                        fill: "none",
-                        class: "path-" + ds.category
-                    });
+            // update if already there
+            xAxis.call(xAxisGen);
 
-                var dots = svg.selectAll("circle")
-                    .data(ds.monthlySales)
-                    .enter()
-                    .append("circle")
-                    .attr({
-                        cx: function (d) { return xScale(getDate(d.month)); },
-                        cy: function (d) { return yScale(d.sales); },
-                        r: 4,
-                        class: "circle-" + ds.category
-                    })
-                    .style({
-                        fill: "#666666"
-                    })
-                    .on("mouseover", function (d) {
-                        tooltip
-                            .transition()
-                            .duration(500)
-                            .style({
-                                opacity: 0.85
-                            });
+            // or create a new one
+            xAxis
+                .data([0])
+                .enter()
+                .append("g")
+                .call(xAxisGen)
+                .attr({
+                    class: "x-axis",
+                    transform: "translate(0, " + (h - padding) + ")"
+                });
 
-                        tooltip
-                            .html("<strong>Sales $" + d.sales + "K</strong>")
-                            .style("left", (d3.event.pageX) + "px")
-                            .style("top", (d3.event.pageY - 28) + "px");
+            // draw the y axis
+            var yAxis = svg.selectAll("g.y-axis");
 
-                    })
-                    .on("mouseout", function (d) {
-                        tooltip
-                            .transition()
-                            .duration(300)
-                            .style({
-                                opacity: 0
-                            });
-                    });
-            }
+            // update the existing one
+            yAxis.call(yAxisGen);
+
+            // create a new one if needed
+            yAxis.data([0]).enter()
+                .append("g")
+                .call(yAxisGen)
+                .attr({
+                    class: "y-axis",
+                    transform: "translate(" + padding + ", 0)"
+                });
+
+            // get the line
+            var viz = svg.selectAll(".path-" + ds.category).data([0]);
+
+            // update the existing line
+            viz.transition()
+                //.duration(3000)
+                .ease("linear") // linear, elastic, circle, bounce
+                .attr({ d: line(ds.monthlySales) });
+
+            // draw a new line if needed
+            viz.enter().append("path")
+                .attr({
+                    d: line(ds.monthlySales),
+                    stroke: "purple",
+                    "stroke-width": 2,
+                    fill: "none",
+                    class: "path-" + ds.category
+                });
+
+            // get the dots
+            var dots = svg.selectAll("circle").data(ds.monthlySales);
+
+            // create new dots
+            dots.enter().append("circle")
+                .attr({
+                    cx: function (d) { return xScale(getDate(d.month)); },
+                    cy: function (d) { return yScale(d.sales); },
+                    r: 4,
+                    class: "circle-" + ds.category
+                })
+                .style({
+                    fill: "#666666"
+                })
+                .on("mouseover", function (d) {
+                    tooltip
+                        .transition()
+                        .duration(500)
+                        .style({
+                            opacity: 0.85
+                        });
+
+                    tooltip
+                        .html("<strong>Sales $" + d.sales + "K</strong>")
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+
+                })
+                .on("mouseout", function (d) {
+                    tooltip
+                        .transition()
+                        .duration(300)
+                        .style({
+                            opacity: 0
+                        });
+                });
+
+            // update existing dots
+            dots.transition()
+                .attr({
+                cx: function (d) { return xScale(getDate(d.month)); },
+                cy: function (d) { return yScale(d.sales); }
+            });
+
+            // remove extra dots
+            dots.exit().remove();
+
         }
 
         function showHeader(ds) {
@@ -252,8 +293,6 @@
 
                 // one chart for each category
                 decoded.contents.forEach(function (ds) {
-
-                    console.log(ds);
 
                     // filter data based on selection
                     ds.monthlySales.splice(0, ds.monthlySales.length - sel);
